@@ -5,7 +5,6 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 import estree from 'estree';
-
 import { walk } from 'estree-walker';
 
 import { TEMPLATE_PARAMS } from '../shared/constants';
@@ -27,7 +26,7 @@ export function bindExpression(expression: TemplateExpression, irNode: IRNode): 
     const root: estree.BaseNode = expression as any;
 
     if (isIdentifier(root)) {
-        if (isComponentProp(root as any)) {
+        if (isComponentProp(root as any, irNode)) {
             return createMemberExpression(createIdentifier(TEMPLATE_PARAMS.INSTANCE), root) as any;
         } else {
             return root as any;
