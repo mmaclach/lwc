@@ -16,14 +16,7 @@ import State from '../state';
 
 import { isCustomElement, isElement } from '../shared/ir';
 import { TEMPLATE_PARAMS, TEMPLATE_FUNCTION_NAME } from '../shared/constants';
-import {
-    IRNode,
-    IRElement,
-    IRText,
-    IRAttribute,
-    IRAttributeType,
-    CompilationOutput,
-} from '../shared/types';
+import { IRNode, IRElement, IRText, IRAttribute, IRAttributeType } from '../shared/types';
 
 import CodeGen from './codegen';
 import { bindExpression } from './scope';
@@ -63,27 +56,6 @@ const TEMPLATE_FUNCTION = template(
     }`,
     { sourceType: 'module' }
 );
-
-const DISALLOWED_LWC_DIRECTIVES = new Set(['dynamic']);
-
-function generateContext(element: IRElement, data: t.ObjectProperty[]) {
-    const { lwc } = element;
-    const contextExpressions: t.ObjectProperty[] = [];
-
-    // LWC
-    if (lwc) {
-        const lwcObject: t.ObjectProperty[] = Object.keys(lwc)
-            .filter((key) => !DISALLOWED_LWC_DIRECTIVES.has(key))
-            .map((key) => {
-                return t.objectProperty(t.identifier(key), t.stringLiteral((lwc as any)[key]));
-            });
-
-        const lwcObj = t.objectProperty(t.identifier('lwc'), t.objectExpression(lwcObject));
-        contextExpressions.push(lwcObj);
-    }
-
-    data.push(t.objectProperty(t.identifier('context'), t.objectExpression(contextExpressions)));
-}
 
 function transform(root: IRElement, codeGen: CodeGen, state: State): t.Expression {
     function transformElement(element: IRElement): t.Expression {
@@ -445,8 +417,17 @@ function transform(root: IRElement, codeGen: CodeGen, state: State): t.Expressio
             data.push(t.objectProperty(t.identifier('props'), propsObj));
         }
 
-        if (lwc) {
-            generateContext(element, data);
+        // Context
+        if (lwc?.dom) {
+            const contextObj = t.objectExpression([
+                t.objectProperty(
+                    t.identifier('lwc'),
+                    t.objectExpression([
+                        t.objectProperty(t.identifier('dom'), t.stringLiteral(lwc.dom)),
+                    ])
+                ),
+            ]);
+            data.push(t.objectProperty(t.identifier('context'), contextObj));
         }
 
         // Key property on VNode
@@ -532,14 +513,11 @@ function format({ config }: State) {
     }
 }
 
-export default function (templateRoot: IRElement, state: State): CompilationOutput {
+export default function (templateRoot: IRElement, state: State): string {
     const templateFunction = generateTemplateFunction(templateRoot, state);
     const formatter = format(state);
     const program = formatter(templateFunction, state);
 
     const { code } = generate(program);
-    return {
-        ast: program,
-        code,
-    };
+    return code;
 }

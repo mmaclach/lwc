@@ -132,22 +132,3 @@ export interface IRBooleanAttribute extends IRBaseAttribute {
 }
 
 export type IRAttribute = IRStringAttribute | IRExpressionAttribute | IRBooleanAttribute;
-
-export type WarningLevel = 'info' | 'warning' | 'error';
-
-export interface CompilationWarning {
-    message: string;
-    start: number;
-    length: number;
-    level: WarningLevel;
-}
-
-export interface CompilationOptions {
-    token: string;
-    experimentalComputedMemberExpression?: boolean;
-}
-
-export interface CompilationOutput {
-    code: string;
-    ast: babelTypes.Node;
-}
