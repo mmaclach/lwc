@@ -14,7 +14,7 @@ import { TemplateErrors, generateCompilerError } from '@lwc/errors';
 
 import State from '../state';
 
-import { isCustomElement, isElement } from '../shared/ir';
+import { isElement, isCustomElement, isTemplate, isSlot } from '../shared/ir';
 import { TEMPLATE_PARAMS, TEMPLATE_FUNCTION_NAME } from '../shared/constants';
 import { IRNode, IRElement, IRText, IRAttribute, IRAttributeType } from '../shared/types';
 
@@ -23,10 +23,8 @@ import { bindExpression } from './scope';
 import {
     identifierFromComponentName,
     objectToAST,
-    isTemplate,
     shouldFlatten,
     destructuringAssignmentFromObject,
-    isSlot,
     memorizeHandler,
     containsDynamicChildren,
 } from './helpers';
